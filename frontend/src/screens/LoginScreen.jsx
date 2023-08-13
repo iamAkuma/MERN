@@ -10,7 +10,7 @@ const LoginScreen = () => {
 
     const submitHandler = async (e) => {
         e.preventDefault()
-        console.log("submit")
+        console.log("Logged in")
     }
     return (
         <div>
