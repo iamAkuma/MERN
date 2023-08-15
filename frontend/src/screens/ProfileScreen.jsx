@@ -6,6 +6,7 @@ import {useDispatch, useSelector} from 'react-redux'
 import { toast } from "react-toastify";
 import Loader from "../components/Loader";
 import { setCredentials } from "../slices/authSlice";
+import { useUpdateUserMutation } from "../slices/usersApiSlice";
 
 
 const ProfileScreen = () => {
@@ -17,8 +18,10 @@ const ProfileScreen = () => {
     const navigate = useNavigate();
     const dispatch = useDispatch();
 
-
+   
     const {userInfo} = useSelector((state) => state.auth)
+
+    const [updateProfile, {isLoading}] = useUpdateUserMutation();
 
     useEffect(() =>{
      setName(userInfo.name);
@@ -32,7 +35,18 @@ const ProfileScreen = () => {
         if(password !== confirmPassword) {
             toast.error('Passwords donot match!');
         } else {
-            console.log('submit')
+            try {
+             const res = await updateProfile({
+              _id: userInfo._id,
+              name,
+              email, 
+              password
+             }).unwrap();
+             dispatch(setCredentials({...res}));
+             toast.success('Profile updated')
+            } catch (error) {
+              toast.error(error?.data?.message || error.error)
+            }
         }
     }
     return (
@@ -41,7 +55,7 @@ const ProfileScreen = () => {
                 <h1>Update Profile</h1>
                 <Form onSubmit={submitHandler}>
                 <Form.Group className="my-2" controlId='name'>
-                        <Form.Label>Email Name</Form.Label>
+                        <Form.Label>Enter Name</Form.Label>
                         <Form.Control type='text'
                             placeholder='Enter Name' value={name}
                             onChange={(e) =>
@@ -74,6 +88,7 @@ const ProfileScreen = () => {
                                 setconfirmPassword(e.target.value)}>
                         </Form.Control>
                     </Form.Group>
+                    {isLoading && <Loader/>}
                     <Button type='submit' variant='primary' className="mt-3">
                    Update
                     </Button>                                     
